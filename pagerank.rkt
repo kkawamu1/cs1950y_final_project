@@ -4,10 +4,11 @@
 sig Page {}
 
 
---sig for state, rank is a set of (page, int) where int represents page's current rank
+--sig for state, rank is a set of (page, int) where int represents page's current rank, edge is a set of edges between the pages (directed)
 sig State {
     page: set Page
     rank: set Page -> Int
+    edge: set Page -> Page
 }
 
 
@@ -32,6 +33,8 @@ pred abstractState {
 pred abstractPage{
 
 }
+
+--pred: 
 
 
 
