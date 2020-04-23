@@ -12,10 +12,6 @@ sig State {
 }
 
 
-
-
-
-
 --pred: a set of states is a set containing all the iterations and an initial state.
 pred abstractState {
       State = Iteration1 + Iteration2 + Iteration3 + Iteration4 + Iteration5     
@@ -43,11 +39,6 @@ pred setup {
     abstractEdge
 }
 
-sig State {
-    near: set Animal,
-    far: set Animal,
-    boat: one Position
-}
 
 pred noStealing[animals: set Animal] {
     -- constraints for no stealing
