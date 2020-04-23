@@ -107,6 +107,7 @@ trace<|State, initState, puzzle, finalState|> traces: linear {}
 run<|traces|> neverStealing for 12 State, exactly 11 Event, 6 Animal, exactly 3 Pet, exactly 3 Owner, 2 Position, 4 Int
 
 
+
 run {setup and some HeapCell - Copy.allocated} for exactly 3 State
 
 
