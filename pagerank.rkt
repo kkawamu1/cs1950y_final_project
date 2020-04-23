@@ -32,7 +32,6 @@ pred abstractEdge{
 
 }
 
---pred:
 
 
 --pred for general setup
@@ -43,19 +42,17 @@ pred setup {
 }
 
 
-pred noZeroRank[page: set Animal] {
+pred noZeroRank[pagerank: set Page->Int] {
     -- constraints for no page having zero rank
-
-    ( all p: animals & Pet| some animals & Owner -p.owned) implies ( all p: animals & Pet| p.owned in animals )
 }
 
-pred neverStealing {
+
+--we should use this pred to check if there will be a page that has zero as its rank.
+pred neverZeroRank {
     -- for any state, there's no zero rank page.
      all s: State | {
-        noStealing[s.near]
-        noStealing[s.far]
+        noZeroRank[s.pageRank]
     }
-    ownedMakesSense
 }
 
 sig Event {
@@ -66,28 +63,28 @@ sig Event {
 state[State] initState {
     -- constraints for the first state
     -- Fill me in!
-    near = Animal
-    no far
-    boat = Near
+    
+--we have to decide what value each page should hold as its initial value. In the original implementation, the initial value for a page p = 1 / the total numebr of pages.
+    pageRank: set Page -> Int
+    link = Page -> Page
 }
+
+
+-- here maybe define the final state as the bad state that we don't want the algorithm to reach. Then we check if it is possible to get to this final state in x amount of transitions.
 state[State] finalState {
-    -- constraints for the last state that should hold for a valid solution
     -- Fill me in!
-    no near
-    far = Animal
-    boat = Far
+    
+
 }
 transition[State] crossRiver[e: Event] {
-    -- constraints for moving across the river
+    -- constraints for how the ranks should be distributed
     -- relating current state s, next state s', and event between them e
     -- Fill me in
     this = e.pre
     this' = e.post
-    #e.toMove <= 2
-    #e.toMove > 0
 
-    boat = Near implies (boat' = Far and e.toMove in near and near' = near - e.toMove and far' = far + e.toMove)
-    boat = Far implies (boat' = Near and e.toMove in far and near' = near + e.toMove and far' = far - e.toMove)
+    ---boat = Near implies (boat' = Far and e.toMove in near and near' = near - e.toMove and far' = far + e.toMove)
+    ---boat = Far implies (boat' = Near and e.toMove in far and near' = near + e.toMove and far' = far - e.toMove)
 }
 
 transition[State] puzzle {
