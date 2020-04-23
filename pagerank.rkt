@@ -34,7 +34,21 @@ pred abstractPage{
 
 }
 
---pred: 
+--pred: no change in the edges across all the iterations. No new edges or no disappearing edges.
+pred abstractEdge{
+
+}
+
+--pred:
+
+
+--pred for general setup
+pred setup {
+    abstractState
+    abstractPage
+    abstractEdge
+
+}
 
 
 
