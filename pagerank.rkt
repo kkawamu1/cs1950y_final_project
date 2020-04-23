@@ -4,10 +4,9 @@
 sig Page {}
 
 
---sig for state, rank is a set of (page, int) where int represents page's current rank, link is a set of edges between the pages (directed)
+--sig for state, pageRank is a relation from Page to Int (each page get to have its rank), link is a set of edges between the pages (directed)
 sig State {
-    page: set Page
-    rank: set Page -> Int
+    pageRank: set Page -> Int
     link: set Page -> Page
 }
 
@@ -24,6 +23,10 @@ pred abstractPage{
 
 }
 
+--pred: all the pages need to have their associated ranks.
+pred allPageHasRank {
+
+}
 --pred: no change in the edges across all the iterations. No new edges or no disappearing edges.
 pred abstractEdge{
 
@@ -40,15 +43,14 @@ pred setup {
 }
 
 
-pred noStealing[animals: set Animal] {
-    -- constraints for no stealing
-    -- Fill me in!
+pred noZeroRank[page: set Animal] {
+    -- constraints for no page having zero rank
 
     ( all p: animals & Pet| some animals & Owner -p.owned) implies ( all p: animals & Pet| p.owned in animals )
 }
 
 pred neverStealing {
-    -- for any state, there's no stealing
+    -- for any state, there's no zero rank page.
      all s: State | {
         noStealing[s.near]
         noStealing[s.far]
@@ -59,7 +61,6 @@ pred neverStealing {
 sig Event {
     pre: one State,
     post: one State,
-    toMove: set Animal
 }
 
 state[State] initState {
@@ -98,8 +99,6 @@ trace<|State, initState, puzzle, finalState|> traces: linear {}
 run<|traces|> neverStealing for 12 State, exactly 11 Event, 6 Animal, exactly 3 Pet, exactly 3 Owner, 2 Position, 4 Int
 
 
-
-run {setup and some HeapCell - Copy.allocated} for exactly 3 State
 
 
 
