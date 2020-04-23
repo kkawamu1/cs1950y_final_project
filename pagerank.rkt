@@ -27,6 +27,15 @@ pred abstractState {
 }
 
 
+
+--pred: no change in the pages themselves across all the iterations. No new pages or no disappearing pages.
+pred abstractPage{
+
+}
+
+
+
+
 run {setup and some HeapCell - Copy.allocated} for exactly 3 State
 
 
