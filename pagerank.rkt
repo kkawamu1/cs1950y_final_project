@@ -1,45 +1,33 @@
 #lang forge
 
-option solver "<Users/kawam.DESKTOP-GQ99D1U/OneDrive/desktop/sat/run.sh>"
+--sig for pages
+sig Page {}
 
-sig Person {
-    handshakes: set Person
-}
-one sig Liar extends Person {}
 
--- Rules for handhakes: nobody shook their own hand, nobody shook anyone's hand more than once, handshakes are reciprocal
-pred basicDefinitions {
-    -- Fill me in!
-    all p: Person | all q: Person-p | no p & p.handshakes and lone (q & p) and (p in q.handshakes implies q in p.handshakes)
-}
-
--- Each person shook a different number of hands
-pred allUniqueHandshakes {
-    basicDefinitions
-    -- Fill me in!
-    all p: Person | all q: Person-p | #(p.handshakes) != #(q.handshakes)
-}
-
---run allUniqueHandshakes for exactly 5 Person, 5 Int
-
--- Everyone except the liar shook a different number of hands
-
-pred oneLiar {
-    basicDefinitions
-    -- Fill me in!
-    all p: Person-Liar | all q: Person-p-Liar | #(p.handshakes) != #(q.handshakes)
-    some p: Person | (#(p.handshakes)= #(Liar.handshakes))
-}
-
-run oneLiar for exactly 5 Person, 5 Int
-
--- The number of hands shaken by the Liar is the only solution to this puzzle
-
-pred noOtherSolution {
-    -- Fill me in!
-    oneLiar implies #(Liar.handshakes) = 2
-
+--sig for state, rank is a set of (page, int) where int represents page's current rank
+sig State {
+    page: set Page
+    rank: set Page -> Int
 }
 
 
-check noOtherSolution for exactly 5 Person, 5 Int
+--I just created 6 states/iteration for no reason. We can change this for sure.
+one sig Initial extends State {}
+one sig Iteration1 extends State {}
+one sig Iteration2 extends State {}
+one sig Iteration3 extends State {}
+one sig Iteration4 extends State {}
+one sig Iteration5 extends State {}
+one sig Iteration6 extends State {}
+
+
+--pred: a set of states is a set containing all the iterations and an initial state.
+pred abstractState {
+      State = Iteration1 + Iteration2 + Iteration3 + Iteration4 + Iteration5     
+}
+
+
+run {setup and some HeapCell - Copy.allocated} for exactly 3 State
+
+
+
