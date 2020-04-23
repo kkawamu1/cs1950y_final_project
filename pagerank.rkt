@@ -4,22 +4,16 @@
 sig Page {}
 
 
---sig for state, rank is a set of (page, int) where int represents page's current rank, edge is a set of edges between the pages (directed)
+--sig for state, rank is a set of (page, int) where int represents page's current rank, link is a set of edges between the pages (directed)
 sig State {
     page: set Page
     rank: set Page -> Int
-    edge: set Page -> Page
+    link: set Page -> Page
 }
 
 
---I just created 6 states/iteration for no reason. We can change this for sure.
-one sig Initial extends State {}
-one sig Iteration1 extends State {}
-one sig Iteration2 extends State {}
-one sig Iteration3 extends State {}
-one sig Iteration4 extends State {}
-one sig Iteration5 extends State {}
-one sig Iteration6 extends State {}
+
+
 
 
 --pred: a set of states is a set containing all the iterations and an initial state.
@@ -47,10 +41,70 @@ pred setup {
     abstractState
     abstractPage
     abstractEdge
-
 }
 
+sig State {
+    near: set Animal,
+    far: set Animal,
+    boat: one Position
+}
 
+pred noStealing[animals: set Animal] {
+    -- constraints for no stealing
+    -- Fill me in!
+
+    ( all p: animals & Pet| some animals & Owner -p.owned) implies ( all p: animals & Pet| p.owned in animals )
+}
+
+pred neverStealing {
+    -- for any state, there's no stealing
+     all s: State | {
+        noStealing[s.near]
+        noStealing[s.far]
+    }
+    ownedMakesSense
+}
+
+sig Event {
+    pre: one State,
+    post: one State,
+    toMove: set Animal
+}
+
+state[State] initState {
+    -- constraints for the first state
+    -- Fill me in!
+    near = Animal
+    no far
+    boat = Near
+}
+state[State] finalState {
+    -- constraints for the last state that should hold for a valid solution
+    -- Fill me in!
+    no near
+    far = Animal
+    boat = Far
+}
+transition[State] crossRiver[e: Event] {
+    -- constraints for moving across the river
+    -- relating current state s, next state s', and event between them e
+    -- Fill me in
+    this = e.pre
+    this' = e.post
+    #e.toMove <= 2
+    #e.toMove > 0
+
+    boat = Near implies (boat' = Far and e.toMove in near and near' = near - e.toMove and far' = far + e.toMove)
+    boat = Far implies (boat' = Near and e.toMove in far and near' = near + e.toMove and far' = far - e.toMove)
+}
+
+transition[State] puzzle {
+    some e: Event | crossRiver[this, this', e]
+}
+
+trace<|State, initState, puzzle, finalState|> traces: linear {}
+
+run<|traces|> neverStealing for 12 State, exactly 11 Event, 6 Animal, exactly 3 Pet, exactly 3 Owner, 2 Position, 4 Int
 
 
 run {setup and some HeapCell - Copy.allocated} for exactly 3 State
