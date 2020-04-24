@@ -27,8 +27,9 @@ state[State] initState {
 
 ---******we need to increase the bounds for int; otherwise, we can only have [-7, 8]
     pageRank = Page -> sing[10]
-    no link.Page & Page.link
-　　--some link
+    all p: Page | #p.link>1 implies no link.p & p.link
+    all p: Page | (one p.link) implies (one link.p & p.link)
+　　some link
 }
 
 ---run {} for exactly 4 Page, exactly 3 State, exactly 4 Int
@@ -37,7 +38,9 @@ state[State] initState {
 --or just define this final state as some random sate, which does not constrain anything, but there for the sake of trace.
 state[State] finalState {
     -- Fill me in!
-　　no link.Page & Page.link
+       all p: Page | #p.link>1 implies no link.p & p.link
+　  all p: Page | (one p.link) implies (one link.p & p.link)
+　　some link　
 }
 
 
@@ -63,7 +66,7 @@ transition[State] naiveUpdate[e: Event] {
     ---*****We have to be careful when taking sum because if we blindly take the sum, we can mess up since there could be duplicates in what we are summing over.*****----
     --https://github.com/cemcutting/Forge/blob/docs/forge/docs/basicForgeDocumentation.md#integers
 
-    --for each vertex v, the value of v in the next iteration is the sum of the ranks / # outgoing edges over the vertex u where u->v is in link 
+    --for each vertex v, the value of v in the next iteration is the sum of the ranks / # outgoing edges over the vertex u where u->v is in link
     all vNext : pageRank.Int| vNext.pageRank' = sing[(sum incoming: link.vNext | {sum[sing[divide[sum[incoming.pageRank], #incoming.link]]] })]
     
 }
@@ -75,7 +78,7 @@ transition[State] naiveAlgorithm {
 
 trace<|State, initState, naiveAlgorithm, finalState|> traces: linear {}
 
-run<|traces|> for 2 State, exactly 3 Event,  8 Int
+run<|traces|> for 4 State, exactly 3 Event,  8 Int
 
 
 ----------Assertion --------------
