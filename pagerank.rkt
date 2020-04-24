@@ -26,8 +26,9 @@ state[State] initState {
 --we have to decide what value each page should hold as its initial value. In the original implementation, the initial value for a page p = 1 / the total numebr of pages.
 
 ---******we need to increase the bounds for int; otherwise, we can only have [-7, 8]
-    pageRank = Page -> sing[1]
-    link = Page -> Page
+    pageRank = Page -> sing[10]
+    no link.Page & Page.link
+　　--some link
 }
 
 ---run {} for exactly 4 Page, exactly 3 State, exactly 4 Int
@@ -36,7 +37,7 @@ state[State] initState {
 --or just define this final state as some random sate, which does not constrain anything, but there for the sake of trace.
 state[State] finalState {
     -- Fill me in!
-    link = Page -> Page
+　　no link.Page & Page.link
 }
 
 
@@ -63,9 +64,10 @@ transition[State] naiveUpdate[e: Event] {
     --https://github.com/cemcutting/Forge/blob/docs/forge/docs/basicForgeDocumentation.md#integers
 
     --for each vertex v, the value of v in the next iteration is the sum of the ranks / # outgoing edges over the vertex u where u->v is in link 
-    all vNext : pageRank.Int| vNext.pageRank' = sing[(sum incoming: link.vNext | {sum[incoming.pageRank] })]
+    all vNext : pageRank.Int| vNext.pageRank' = sing[(sum incoming: link.vNext | {sum[sing[divide[sum[incoming.pageRank], #incoming.link]]] })]
     
 }
+
 
 transition[State] naiveAlgorithm {
     some e: Event | naiveUpdate[this, this', e]
@@ -73,7 +75,7 @@ transition[State] naiveAlgorithm {
 
 trace<|State, initState, naiveAlgorithm, finalState|> traces: linear {}
 
-run<|traces|> for 2 State, exactly 3 Event, 4 Int
+run<|traces|> for 2 State, exactly 3 Event,  8 Int
 
 
 ----------Assertion --------------
