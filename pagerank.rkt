@@ -23,16 +23,16 @@ state[State] initState {
     -- constraints for the first state
     -- Fill me in!
     
---we have to decide what value each page should hold as its initial value. In the original implementation, the initial value for a page p = 1 / the total numebr of pages.
+    --we have to decide what value each page should hold as its initial value. In the original implementation, the initial value for a page p = 1 / the total numebr of pages.
 
---******we need to increase the bounds for int; otherwise, we can only have [-7, 8] you can chage the initial value here.
+    --******we need to increase the bounds for int; otherwise, we can only have [-7, 8] you can chage the initial value here.
     pageRank = Page -> sing[100]
 
     --if there are more than two outgoing edgesm then none of them can be a self loop.
     all p: Page | #p.link>1 implies no link.p & p.link
 
-    --only time, the page will have just one outgoing edge is when it is pointing itself to preserve the total ranks. (it is going to send its rank to itself)
-    all p: Page | (one p.link) implies (one link.p & p.link)
+    --all the pages have at least one edge. If there is one outgoing edgem then it could be to itself or to another page
+    all p: Page | #p.link >= 1
 
     --there should be at least one page;otherwise, it is not so interesting anymore.
 　　some link
@@ -42,13 +42,12 @@ state[State] initState {
 
 -- here maybe define the final state as the bad state that we don't want the algorithm to reach. Then we check if it is possible to get to this final state in x amount of transitions.
 --or just define this final state as some random sate, which does not constrain anything, but there for the sake of trace.
+
 state[State] finalState {
     -- Fill me in!
-
-
     ---right now I am defining the final state to be a random state with pretty much no constraint except that it needs to have the same graph.
     all p: Page | #p.link>1 implies no link.p & p.link
-　  all p: Page | (one p.link) implies (one link.p & p.link)
+    all p: Page | #p.link >= 1
 　　some link　
 }
 
@@ -81,12 +80,32 @@ transition[State] naiveAlgorithm {
 
 trace<|State, initState, naiveAlgorithm, finalState|> traces: linear {}
 
-run<|traces|> for 4 State, exactly 3 Event,  10 Int
+--run<|traces|> for 4 State, exactly 3 Event,  10 Int
+
+
+-- Define a partial instance to have as our bounds
+inst bounds {
+    #State = 4
+    #Event <= 4
+}
+
+pred wellFormedEvent {
+    all s: traces.tran.State | one e: Event | e.pre = s
+}
+                               
+pred wellFormed {
+    wellFormedEvent
+}
+
 
 
 ----------Assertion --------------
+
+--1. check if it is possible to have a page with zero rank with the naive implementation.
+                               
 pred noZeroRank[pagerank: set Page->Int] {
     -- constraints for no page having zero rank
+    not (sing[0] in Page.pagerank)
 }
 
 
@@ -98,6 +117,46 @@ pred neverZeroRank {
     }
 }
 
+/**
+We expect this to return some counterexamples. This shows the defect of the naive algorithm.
+
+**/
+--check<|traces|> {neverZeroRank} for 4 State, exactly 3 Event,  10 Int
+
+
+
+
+--2. check if page p having rank zero at state = s implies p having rank zero again in the next state s'.
+
+pred zeroThenZero {
+    --for each itration, and for each page, check its rank = 0 implies its rank = 0 in the next iteration.
+    all iteration: Event | all p: Page| (iteration.pre.pageRank)[Page] = sing[0] implies (iteration.post.pageRank)[Page] = sing[0]    
+}
+
+
+/**
+ We expect this to have no couter example. If a page get zero as its rank at some point, then it can never get any rank again.
+This checks for the property. This explains why we need to have some mechanism to keep some of the weights to themselvs in the real version of the algorithm.
+**/
+
+--check<|traces|> {zeroThenZero} for 4 State, exactly 3 Event,  10 Int
+
+
+--3. If there is a sink (i.e. a page with only the edge to itself), then there will be page with rank zero.
+
+
+pred sinkPage {
+    all iteration: Event | some p: Page| (iteration.pre.link).Page = p
+}
+
+
+
+/**
+If there is a sink, then it will get at least some amout of the rank from the other pages. If there is an edge between sink and non-sink, then there is a flow of rank from non-sink to sink.
+Threfore, with enough iteration, there should be a rank zero page. 
+**/
+
+check<|traces|> {sinkPage implies not(neverZeroRank)} for 4 State, exactly 3 Event,  10 Int
 
 
 
