@@ -83,7 +83,30 @@ trace<|State, initState, naiveAlgorithm, finalState|> traces: linear {}
 --run<|traces|> for 4 State, exactly 3 Event,  10 Int
 
 
+transition[State] fullUpdate[e: Event] {
+    -- constraints for how the ranks should be distributed
+    -- relating current state s, next state s', and event between them e
+    -- Fill me in
+    this = e.pre
+    this' = e.post
 
+    --link will stay the same between the states
+    link' = link
+
+    --All the pages stay the same
+    pageRank'.Int = pageRank.Int
+    
+    ---*****We have to be careful when taking sum because if we blindly take the sum, we can mess up since there could be duplicates in what we are summing over.*****----
+    --https://github.com/cemcutting/Forge/blob/docs/forge/docs/basicForgeDocumentation.md#integers
+
+    --damping factor = 0.85
+    all vNext : pageRank.Int| vNext.pageRank' = sing[add[(divide[subtract[1, 0.85], #Page]), multiply[(sum incoming: link.vNext | {sum[sing[divide[sum[incoming.pageRank], #incoming.link]]]}), 0.85]]]
+    
+}
+
+transition[State] fullAlgorithm {
+    some e: Event | fullUpdate[this, this', e]
+}
 
 
 ----------Assertion --------------
