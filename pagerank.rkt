@@ -83,19 +83,6 @@ trace<|State, initState, naiveAlgorithm, finalState|> traces: linear {}
 --run<|traces|> for 4 State, exactly 3 Event,  10 Int
 
 
--- Define a partial instance to have as our bounds
-inst bounds {
-    #State = 4
-    #Event <= 4
-}
-
-pred wellFormedEvent {
-    all s: traces.tran.State | one e: Event | e.pre = s
-}
-                               
-pred wellFormed {
-    wellFormedEvent
-}
 
 
 
@@ -142,21 +129,24 @@ This checks for the property. This explains why we need to have some mechanism t
 --check<|traces|> {zeroThenZero} for 4 State, exactly 3 Event,  10 Int
 
 
---3. If there is a sink (i.e. a page with only the edge to itself), then there will be page with rank zero.
-
+--3. If there is a sink (i.e. a page with only the edge to itself) and some other pages are pointing to the sink, then there will be page with rank zero.
+--We added "other pages pointing at the sink", because if all the pages are pointing at themselvs, then it is not interesting.
 
 pred sinkPage {
-    all iteration: Event | some p: Page| (iteration.pre.link).Page = p
+               --only page that the sink is pointing is itself.
+    all s: State | some p: Page| (p.(s.link) = p)
+    all s: State | all p: Page| (p.(s.link) = p) implies some ((s.link).p - p)
 }
 
 
 
 /**
 If there is a sink, then it will get at least some amout of the rank from the other pages. If there is an edge between sink and non-sink, then there is a flow of rank from non-sink to sink.
-Threfore, with enough iteration, there should be a rank zero page. 
+Threfore, with enough iteration, there should be a rank zero page. However, we should see the instances where the sink is not connected to any page. Therefore, the sink does not suck up the rank.
+We probably need lot of iterations to congerve.
 **/
 
-check<|traces|> {sinkPage implies not(neverZeroRank)} for 4 State, exactly 3 Event,  10 Int
+check<|traces|> {sinkPage implies not (neverZeroRank)} for 8 State, exactly 8 Event,  10 Int, exactly 3 Page
 
 
 
