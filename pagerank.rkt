@@ -26,7 +26,7 @@ state[State] initState {
 --we have to decide what value each page should hold as its initial value. In the original implementation, the initial value for a page p = 1 / the total numebr of pages.
 
 --******we need to increase the bounds for int; otherwise, we can only have [-7, 8] you can chage the initial value here.
-    pageRank = Page -> sing[10]
+    pageRank = Page -> sing[100]
 
     --if there are more than two outgoing edgesm then none of them can be a self loop.
     all p: Page | #p.link>1 implies no link.p & p.link
@@ -81,7 +81,7 @@ transition[State] naiveAlgorithm {
 
 trace<|State, initState, naiveAlgorithm, finalState|> traces: linear {}
 
-run<|traces|> for 4 State, exactly 3 Event,  8 Int
+run<|traces|> for 4 State, exactly 3 Event,  10 Int
 
 
 ----------Assertion --------------
