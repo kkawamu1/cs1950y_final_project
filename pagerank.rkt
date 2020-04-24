@@ -25,20 +25,29 @@ state[State] initState {
     
 --we have to decide what value each page should hold as its initial value. In the original implementation, the initial value for a page p = 1 / the total numebr of pages.
 
----******we need to increase the bounds for int; otherwise, we can only have [-7, 8]
+--******we need to increase the bounds for int; otherwise, we can only have [-7, 8] you can chage the initial value here.
     pageRank = Page -> sing[10]
+
+    --if there are more than two outgoing edgesm then none of them can be a self loop.
     all p: Page | #p.link>1 implies no link.p & p.link
+
+    --only time, the page will have just one outgoing edge is when it is pointing itself to preserve the total ranks. (it is going to send its rank to itself)
     all p: Page | (one p.link) implies (one link.p & p.link)
+
+    --there should be at least one page;otherwise, it is not so interesting anymore.
 　　some link
 }
 
----run {} for exactly 4 Page, exactly 3 State, exactly 4 Int
+
 
 -- here maybe define the final state as the bad state that we don't want the algorithm to reach. Then we check if it is possible to get to this final state in x amount of transitions.
 --or just define this final state as some random sate, which does not constrain anything, but there for the sake of trace.
 state[State] finalState {
     -- Fill me in!
-       all p: Page | #p.link>1 implies no link.p & p.link
+
+
+    ---right now I am defining the final state to be a random state with pretty much no constraint except that it needs to have the same graph.
+    all p: Page | #p.link>1 implies no link.p & p.link
 　  all p: Page | (one p.link) implies (one link.p & p.link)
 　　some link　
 }
@@ -50,12 +59,6 @@ transition[State] naiveUpdate[e: Event] {
     -- Fill me in
     this = e.pre
     this' = e.post
-
-    ---boat = Near implies (boat' = Far and e.toMove in near and near' = near - e.toMove and far' = far + e.toMove)
-    ---boat = Far implies (boat' = Near and e.toMove in far and near' = near + e.toMove and far' = far - e.toMove)
-    ---new page rank for v = sum over the vertices, u,  with incoming edge to v: [u's old page rank / |u's outgoing edges|] 
-    --pageRank: set Page -> Int,
-    --link: set Page -> Page
 
     --link will stay the same between the states
     link' = link
