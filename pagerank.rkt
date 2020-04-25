@@ -32,6 +32,8 @@ state[State] initState {
     all p: Page | #p.link>1 implies no link.p & p.link
 
     --all the pages have at least one edge. If there is one outgoing edgem then it could be to itself or to another page
+    ---*****If we delte this, the we can have a page with no outgoing edge, then we expect to see the "disappering rank". It will be easy to check that too.****---
+　　　
     all p: Page | #p.link >= 1
 
     --there should be at least one page;otherwise, it is not so interesting anymore.
