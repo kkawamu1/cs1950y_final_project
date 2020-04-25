@@ -143,10 +143,10 @@ pred sinkPage {
 /**
 If there is a sink, then it will get at least some amout of the rank from the other pages. If there is an edge between sink and non-sink, then there is a flow of rank from non-sink to sink.
 Threfore, with enough iteration, there should be a rank zero page. However, we should see the instances where the sink is not connected to any page. Therefore, the sink does not suck up the rank.
-We probably need lot of iterations to congerve.
+We probably need lot of iterations to congerve...Difficult to check for many pages.
 **/
 
-check<|traces|> {sinkPage implies not (neverZeroRank)} for 8 State, exactly 8 Event,  10 Int, exactly 3 Page
+--check<|traces|> {sinkPage implies not (neverZeroRank)} for 8 State, exactly 8 Event,  10 Int, exactly 3 Page
 
 
 
