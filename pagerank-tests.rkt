@@ -19,7 +19,7 @@ sig Event {
     post: one State
 }
 
-state[State] initState {
+state[State] simpleInitState {
     -- constraints for the first state
     --we have to decide the initial value for each page is 10 to approximate the floating points.
     pageRank = Page -> sing[10]
@@ -74,8 +74,31 @@ transition[State] naiveAlgorithm {
     some e: Event | naiveUpdate[this, this', e]
 }
 
-trace<|State, initState, naiveAlgorithm, finalState|> simpleTrace: linear {}
+trace<|State, simpleInitState, naiveAlgorithm, finalState|> simpleTrace: linear {}
 --run<|simpleTrace|> for 4 State, exactly 3 Event,  10 Int
+
+state[State] initState {
+    -- constraints for the first state
+    --we have to decide the initial value for each page is 10 to approximate the floating points.
+    pageRank = Page -> sing[10]
+
+    --if there are more than two outgoing edges then none of them can be a self loop.
+    all p: Page | #p.link>1 implies no link.p & p.link
+
+    --Every page has at least one edge out.
+　　　
+    all p: Page | #p.link >= 1
+    --For the full version of the algorithm, we want to add edges to the sink pages. We are going to do that by defining the initial states such that
+    --for any page p, if there is one edge out from p, then p cannot point itself. Note that this differs from the naive implementation.
+    --For a naive implementation, we allow a page to point itself when there is only one edge out to avoid disappearing rank.
+    --However, in the naive implementation, adding edges to all the pages is the way to handle the sink.
+
+    all p: Page | (#p.link = 1) implies (p.link != p)
+
+    --there should be at least one page; otherwise, it is not so interesting anymore.
+　　some link
+}
+
 
 
 transition[State] fullUpdate[e: Event] {
@@ -125,9 +148,13 @@ pred neverZeroRank {
 
 /**
 We expect this to return some counterexamples. This shows the defect of the naive algorithm.
-
 **/
+
+
+--this gives couterexamples. 
 --check<|simpleTrace|> {neverZeroRank} for 4 State, exactly 3 Event,  10 Int
+
+
 --check<|traces|> {neverZeroRank} for 4 State, exactly 3 Event,  10 Int
 
 
@@ -146,7 +173,10 @@ pred zeroThenZero {
 This checks for the property. This explains why we need to have some mechanism to keep some of the weights to themselvs in the real version of the algorithm.
 **/
 
+--no counterexample. 
 --check<|simpleTrace|> {zeroThenZero} for 4 State, exactly 3 Event,  10 Int
+
+
 --check<|traces|> {zeroThenZero} for 4 State, exactly 3 Event,  10 Int
 
 
@@ -200,10 +230,10 @@ pred concentratedRank[s: State] {
 
 --run<|traces|> {concentratedRank[traces.term]} for 10 Int, exactly 3 Page
 
-test expect {
-    <|simpleTrace|> {noRank[simpleTrace.term]} for 10 Int is sat
-    <|traces|> {noRank[traces.term]} for 10 Int is unsat
+--test expect {
+--    <|simpleTrace|> {noRank[simpleTrace.term]} for 10 Int is sat
+--    <|traces|> {noRank[traces.term]} for 10 Int is unsat
 
-    <|simpleTrace|> {concentratedRank[simpleTrace.term]} for 10 Int is sat
-    <|traces|> {concentratedRank[traces.term]} for 10 Int is unsat
-}
+--    <|simpleTrace|> {concentratedRank[simpleTrace.term]} for 10 Int is sat
+--    <|traces|> {concentratedRank[traces.term]} for 10 Int is unsat
+--}
