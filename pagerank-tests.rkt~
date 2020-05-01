@@ -101,7 +101,7 @@ transition[State] fullUpdate[e: Event] {
     --https://github.com/cemcutting/Forge/blob/docs/forge/docs/basicForgeDocumentation.md#integers
 
     --damping factor = 0.8
-    all vNext : pageRank.Int| vNext.pageRank' = sing[add[(divide[multiply[2, multiply[#Page, 10]], multiply[#Page, 10]]), divide[multiply[(sum incoming: link.vNext | {sum[sing[divide[sum[incoming.pageRank], #incoming.link]]]}), 8],10]]]
+    all vNext : pageRank.Int| vNext.pageRank' = sing[add[(divide[multiply[2, 30], multiply[#Page, 10]]), divide[multiply[(sum incoming: link.vNext | {sum[sing[divide[sum[incoming.pageRank], #incoming.link]]]}), 8],10]]]
 }
 
 transition[State] fullAlgorithm {
