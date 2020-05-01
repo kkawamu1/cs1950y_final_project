@@ -23,9 +23,7 @@ state[State] initState {
     -- constraints for the first state
     -- Fill me in!
     
-    --we have to decide what value each page should hold as its initial value. In the original implementation, the initial value for a page p = 1 / the total numebr of pages.
-
-    --******we need to increase the bounds for int; otherwise, we can only have [-7, 8] you can chage the initial value here.
+   --we have to decide the initial value for each page is 10 to approximate the floating points.
     pageRank = Page -> sing[10]
 
     --if there are more than two outgoing edgesm then none of them can be a self loop.
@@ -42,12 +40,9 @@ state[State] initState {
 
 
 
--- here maybe define the final state as the bad state that we don't want the algorithm to reach. Then we check if it is possible to get to this final state in x amount of transitions.
---or just define this final state as some random sate, which does not constrain anything, but there for the sake of trace.
 
 state[State] finalState {
-    -- Fill me in!
-    ---right now I am defining the final state to be a random state with pretty much no constraint except that it needs to have the same graph.
+     ---this is sort of like a placeholder for the sake of trace. It constraints the same thing as the initial state. The transition will take care of the ranks and preserve the graph.
     all p: Page | #p.link>1 implies no link.p & p.link
     all p: Page | #p.link >= 1
 　　some link　
