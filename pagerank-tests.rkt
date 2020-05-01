@@ -200,7 +200,16 @@ pred noRank[s: State] {
 
 --run<|traces|> {noRank[traces.term]} for 10 Int, exactly 3 Page
 
+pred concentratedRank[s: State] {
+    sing[multiply[#Page, 10]] in s.pageRank[Page]
+}
+
+--run<|traces|> {concentratedRank[traces.term]} for 10 Int, exactly 3 Page
+
 test expect {
     <|simpleTrace|> {noRank[simpleTrace.term]} for 10 Int is sat
     <|traces|> {noRank[traces.term]} for 10 Int is unsat
+
+    <|simpleTrace|> {concentratedRank[simpleTrace.term]} for 10 Int is sat
+    <|traces|> {concentratedRank[traces.term]} for 10 Int is unsat
 }
