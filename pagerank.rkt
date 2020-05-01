@@ -19,7 +19,7 @@ sig Event {
     post: one State
 }
 
-state[State] initState {
+state[State] simpleInitState {
     -- constraints for the first state
     -- Fill me in!
     
@@ -37,6 +37,8 @@ state[State] initState {
     --there should be at least one page;otherwise, it is not so interesting anymore.
 　　some link
 }
+
+
 
 
 
@@ -75,9 +77,32 @@ transition[State] naiveAlgorithm {
     some e: Event | naiveUpdate[this, this', e]
 }
 
---trace<|State, initState, naiveAlgorithm, finalState|> traces: linear {}
+--trace<|State, simpleInitState, naiveAlgorithm, finalState|> traces: linear {}
 
 --run<|traces|> for 4 State, exactly 3 Event,  10 Int
+
+state[State] initState {
+    -- constraints for the first state
+    --we have to decide the initial value for each page is 10 to approximate the floating points.
+    pageRank = Page -> sing[10]
+
+    --if there are more than two outgoing edges then none of them can be a self loop.
+    all p: Page | #p.link>1 implies no link.p & p.link
+
+    --Every page has at least one edge out.
+　　　
+    all p: Page | #p.link >= 1
+    --For the full version of the algorithm, we want to add edges to the sink pages. We are going to do that by defining the initial states such that
+    --for any page p, if there is one edge out from p, then p cannot point itself. Note that this differs from the naive implementation.
+    --For a naive implementation, we allow a page to point itself when there is only one edge out to avoid disappearing rank.
+    --However, in the naive implementation, adding edges to all the pages is the way to handle the sink.
+
+    all p: Page | (#p.link = 1) implies (p.link != p)
+
+    --there should be at least one page; otherwise, it is not so interesting anymore.
+　　some link
+}
+
 
 
 transition[State] fullUpdate[e: Event] {
