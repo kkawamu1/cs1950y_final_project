@@ -102,7 +102,7 @@ transition[State] fullAlgorithm {
 }
 
 trace<|State, initState, fullAlgorithm, _|> traces: linear {}
-run<|traces|> for 3 State, 2 Event,  10 Int, exactly 3 Page
+--run<|traces|> for 3 State, 2 Event,  10 Int, exactly 3 Page
 
 ----------Assertion --------------
 
@@ -128,15 +128,14 @@ We expect this to return some counterexamples. This shows the defect of the naiv
 
 
 --this gives couterexamples. 
---check<|simpleTrace|> {neverZeroRank} for 4 State, exactly 3 Event,  10 Int
+--check<|simpleTrace|> {neverZeroRank} for 4 State, 3 Event,  10 Int
+--check<|simpleTrace|> {neverZeroRank} for 2 State, 1 Event,  10 Int
 
 --this check is really slow
 --check<|traces|> {neverZeroRank} for 4 State, exactly 3 Event,  10 Int
 
 --no counter example
---check<|traces|> {neverZeroRank} for 2 State, exactly 1 Event,  10 Int
---slow
---check<|traces|> {neverZeroRank} for 3 State, exactly 2 Event,  10 Int
+--check<|traces|> {neverZeroRank} for 4 State, 3 Event, 10 Int, 3 Page
 
 
 
@@ -154,14 +153,14 @@ This checks for the property. This explains why we need to have some mechanism t
 **/
 
 --no counterexample, but really slow
---check<|simpleTrace|> {zeroThenZero} for 4 State, exactly 3 Event,  10 Int
+--check<|simpleTrace|> {zeroThenZero} for 4 State, 3 Event,  10 Int
 
 --slow too
 --this is effectively checkin whether it is possible for an advanced one to have zero rank at all. Therefore, it makes sense that it takes time.
 --check<|traces|> {zeroThenZero} for 4 State, exactly 3 Event,  10 Int
 
 --no counerexample
---check<|traces|> {zeroThenZero} for 2 State, exactly 1 Event,  10 Int
+--check<|traces|> {zeroThenZero} for 4 State, 3 Event,  10 Int, 3 Page
 
 
 
@@ -176,7 +175,7 @@ pred sinkPage {
 }
 
 --counter-example because trace is not long enough
---check<|simpleTrace|> {sinkPage implies not (neverZeroRank)} for 8 State, exactly 7 Event, 10 Int
+--check<|simpleTrace|> {sinkPage implies not (neverZeroRank)} for 10 State, 9 Event, 10 Int
 
 --this has no counter-example because there is no sink
 --check<|traces|> {sinkPage implies not (neverZeroRank)} for 8 State, 10 Int
@@ -197,10 +196,13 @@ pred rankConservation2 [t: TraceBase] {
 }
 
 -- counter-example because of the possibility of a sink
---check<|simpleTrace|> {rankConservation2[simpleTrace]} for 8 State, exactly 8 Event, 10 Int, 3 Page
+--check<|simpleTrace|> {rankConservation2[simpleTrace]} for 4 State, 3 Event, 10 Int
 
 --slow
 --check<|traces|> {rankConservation2[traces]} for 8 State, exactly 8 Event, 10 Int, exactly 3 Page
+--counterexample because of the rounding issue.
+--check<|traces|> {rankConservation2[traces]} for 4 State, 3 Event, 10 Int, 3 Page
+
 
 pred noRank[s: State] {
     sing[0] in s.pageRank[Page]
@@ -215,6 +217,10 @@ pred concentratedRank[s: State] {
 
 --run<|traces|> {concentratedRank[traces.term]} for 10 Int, exactly 3 Page
 
+--counterxample. We can have a page with zero rank.
+--check<|simpleTrace|> {noRank[simpleTrace.term]} for 4 State, 3 Event, 10 Int
+
+
 test expect {
     --<|simpleTrace|> {noRank[simpleTrace.term]} for 10 Int is sat
 
@@ -223,8 +229,10 @@ test expect {
 
     --<|simpleTrace|> {concentratedRank[simpleTrace.term]} for 10 Int is sat
 
+
+    --<|traces|> {concentratedRank[traces.term]} for 10 Int, 3 Page is unsat
     --slow
-    --<|traces|> {concentratedRank[traces.term]} for 10 Int is unsat
+    --<|traces|> {concentratedRank[traces.term]} for 10 Int, exactly 4 Page is unsat
 }
 
 pred onePage {
@@ -251,10 +259,11 @@ pred twoPageImpossible[t: TraceBase] {
 }
 
 --if the graph is symmetric, the two page have the same rank
+
+
 test expect{
     --<|simpleTrace|> {twoPage[simpleTrace]} for 10 Int is sat
     --<|traces|> {twoPage[traces]} for 10 Int is sat
     --<|simpleTrace|> {twoPageImpossible[simpleTrace]} for 10 Int is unsat
-    --slow
-    --<|traces|> {twoPageImpossible[traces]} for 10 Int is unsat
+    --<|traces|> {twoPageImpossible[traces]} for 10 Int, 4 Page is unsat
 }
