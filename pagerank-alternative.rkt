@@ -33,16 +33,6 @@ state[State] simpleInitState {
 
 
 
-
-/*
-state[State] finalState {
-    ---this is sort of like a placeholder for the sake of trace. It constraints the same thing as the initial state. The transition will take care of the ranks and preserve the graph.
-    all p: Page | #p.link > 1 implies no link.p & p.link
-    all p: Page | #p.link >= 1
-　　some Page　
-}
-*/
-
 transition[State] naiveUpdate[e: Event] {
     -- constraints for how the ranks should be distributed
     -- relating current state s, next state s', and event between them e
@@ -70,17 +60,15 @@ transition[State] naiveAlgorithm {
 }
 
 trace<|State, simpleInitState, naiveAlgorithm, _|> simpleTrace: linear {}
---run<|simpleTrace|> for 4 State, exactly 3 Event,  10 Int
+--run<|simpleTrace|> for 4 State, 3 Event,  10 Int
 
 state[State] initState {
     -- constraints for the first state
     --we have to decide the initial value for each page is 10 to approximate the floating points.
     pageRank = Page -> sing[10]
 
-    --if there are more than two outgoing edges then none of them can be a self loop.
-    --all p: Page | #p.link>1 implies no link.p & p.link
 
-    --Every page has at least one edge out. This guarantees that we do not have a sink. This emurates "adding edges to all pages".
+    --Every page has at least one edge out. This guarantees that we do not have a sink. This emulates "adding edges to all pages".
     all p: Page | some (p.link)
 
     --there should be at least one page; otherwise, it is not so interesting anymore.
@@ -114,7 +102,7 @@ transition[State] fullAlgorithm {
 }
 
 trace<|State, initState, fullAlgorithm, _|> traces: linear {}
-run<|traces|> for 4 State, exactly 3 Event,  10 Int, exactly 4 Page
+run<|traces|> for 3 State, 2 Event,  10 Int, exactly 3 Page
 
 ----------Assertion --------------
 
