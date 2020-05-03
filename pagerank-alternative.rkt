@@ -22,16 +22,10 @@ sig Event {
 
 state[State] simpleInitState {
     -- constraints for the first state
+    --we allow a page to point to itself.
     --we have to decide the initial value for each page is 10 to approximate the floating points.
     pageRank = Page -> sing[10]
-
-    --if there are more than two outgoing edges then none of them can be a self loop.
-    --all p: Page | #p.link>1 implies no link.p & p.link
-
-    --all the pages have at least one edge. If there is one outgoing edges then it could be to itself or to another page
-    ---*****If we delete this, then we can have a page with no outgoing edge, then we expect to see the "disappearing rank". It will be easy to check that too.****---
-　　　
-    --all p: Page | some p.link
+    
 
     --there should be at least one page; otherwise, it is not so interesting anymore.
 　　some Page
@@ -86,15 +80,8 @@ state[State] initState {
     --if there are more than two outgoing edges then none of them can be a self loop.
     --all p: Page | #p.link>1 implies no link.p & p.link
 
-    --Every page has at least one edge out.
-　　　
-    all p: Page | some (p.link - p)
-    --For the full version of the algorithm, we want to add edges to the sink pages. We are going to do that by defining the initial states such that
-    --for any page p, if there is one edge out from p, then p cannot point itself. Note that this differs from the naive implementation.
-    --For a naive implementation, we allow a page to point itself when there is only one edge out to avoid disappearing rank.
-    --However, in the naive implementation, adding edges to all the pages is the way to handle the sink.
-
-    --all p: Page | (#p.link = 1) implies (p.link != p)
+    --Every page has at least one edge out. This guarantees that we do not have a sink. This emurates "adding edges to all pages".
+    all p: Page | some (p.link)
 
     --there should be at least one page; otherwise, it is not so interesting anymore.
 　　some Page
@@ -127,11 +114,11 @@ transition[State] fullAlgorithm {
 }
 
 trace<|State, initState, fullAlgorithm, _|> traces: linear {}
---run<|traces|> for 3 State, exactly 3 Event,  10 Int, exactly 3 Page
+run<|traces|> for 4 State, exactly 3 Event,  10 Int, exactly 4 Page
 
 ----------Assertion --------------
 
---1. check if it is possible to have a page with zero rank with the naive implementation.
+--1. check if it is possible to have a page with zero rank.
                                
 pred noZeroRank[pagerank: set Page->Int] {
     -- constraints for no page having zero rank
@@ -158,6 +145,10 @@ We expect this to return some counterexamples. This shows the defect of the naiv
 --this check is really slow
 --check<|traces|> {neverZeroRank} for 4 State, exactly 3 Event,  10 Int
 
+--no counter example
+--check<|traces|> {neverZeroRank} for 2 State, exactly 1 Event,  10 Int
+--slow
+--check<|traces|> {neverZeroRank} for 3 State, exactly 2 Event,  10 Int
 
 
 
@@ -178,30 +169,26 @@ This checks for the property. This explains why we need to have some mechanism t
 --check<|simpleTrace|> {zeroThenZero} for 4 State, exactly 3 Event,  10 Int
 
 --slow too
+--this is effectively checkin whether it is possible for an advanced one to have zero rank at all. Therefore, it makes sense that it takes time.
 --check<|traces|> {zeroThenZero} for 4 State, exactly 3 Event,  10 Int
+
+--no counerexample
+--check<|traces|> {zeroThenZero} for 2 State, exactly 1 Event,  10 Int
+
+
 
 
 --3. If there is a sink (i.e. a page with only the edge to itself) and some other pages are pointing to the sink, then there will be page with rank zero.
---We added "other pages pointing at the sink", because if all the pages are pointing at themselvs, then it is not interesting.
-
 -- I am not sure this pred will work since there might be a cycle and a sink. The rank in the cycle will gradually move to the sink, but the cycle will never become dry.
+--it might be the case that rounding will enforce this pred to be true with the finte precision as in the case for any computer.
 pred sinkPage {
-               --only page that the sink is pointing is itself.
-    --all s: State | some p: Page| (p.(s.link) = p)
-    --all s: State | all p: Page| (p.(s.link) = p) implies some ((s.link).p - p)
-    some p: Page | no (p.link - p) and some (link.p - p)
+    --sink page: no edge out from a page.
+    ---some p: Page | no (p.link - p) and some (link.p - p)
+    some p: Page | no (p.link)
 }
 
-
-
-/**
-If there is a sink, then it will get at least some amout of the rank from the other pages. If there is an edge between sink and non-sink, then there is a flow of rank from non-sink to sink.
-Threfore, with enough iteration, there should be a rank zero page. However, we should see the instances where the sink is not connected to any page. Therefore, the sink does not suck up the rank.
-We probably need lot of iterations to congerve...Difficult to check for many pages.
-**/
-
 --counter-example because trace is not long enough
---check<|simpleTrace|> {sinkPage implies not (neverZeroRank)} for 8 State, exactly 8 Event, 10 Int
+--check<|simpleTrace|> {sinkPage implies not (neverZeroRank)} for 8 State, exactly 7 Event, 10 Int
 
 --this has no counter-example because there is no sink
 --check<|traces|> {sinkPage implies not (neverZeroRank)} for 8 State, 10 Int
