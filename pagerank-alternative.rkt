@@ -267,3 +267,128 @@ test expect{
     --<|simpleTrace|> {twoPageImpossible[simpleTrace]} for 10 Int is unsat
     --<|traces|> {twoPageImpossible[traces]} for 10 Int, 4 Page is unsat
 }
+
+inst cycle {
+    Page = Page0 + Page1 + Page2
+    link = Page0 -> Page1 + Page1 -> Page2 + Page2 -> Page0
+}
+
+
+/*
+-- If the graph is a cycle, then the rank is already stabilized
+test expect {
+    <|simpleTrace|> {pageRank[simpleTrace.init] = pageRank[simpleTrace.term]} for {
+        Int[10]
+        cycle
+    } is sat
+    <|traces|> {pageRank[traces.init] = pageRank[traces.term]} for {
+        Int[10]
+        cycle
+    } is sat
+    <|simpleTrace|> {pageRank[simpleTrace.init] != pageRank[simpleTrace.term]} for {
+        Int[10]
+        cycle
+    } is unsat
+    <|traces|> {pageRank[traces.init] != pageRank[traces.term]} for {
+        Int[10]
+        cycle
+    } is unsat
+}
+*/
+
+inst disconnected {
+    Page = Page0 + Page1 + Page2
+    link = Page0 -> Page1 + Page1 -> Page1 + Page2 -> Page2
+}
+
+/*
+-- instance test for a disconnected graph
+test expect {
+    <|simpleTrace|> {
+        pageRank[simpleTrace.term][Page] = sing[0] + sing[10] + sing[20]
+    } for {
+        Int[10]
+        disconnected
+    } is sat
+    <|simpleTrace|> {
+        pageRank[simpleTrace.term][Page] not in (sing[0] + sing[10] + sing[20])
+    } for {
+        Int[10]
+        disconnected
+    } is unsat
+    <|traces|> {
+        pageRank[traces.term][Page] = sing[2] + sing[10] + sing[18]
+    } for {
+        Int[10]
+        disconnected
+    } is sat
+    <|traces|> {
+        pageRank[traces.term][Page] not in (sing[2] + sing[10] + sing[18])
+    } for {
+        Int[10]
+        disconnected
+    } is unsat
+}
+*/
+
+inst sink {
+    Page = Page0 + Page1 + Page2 + Page3
+    link = Page0 -> Page1 + Page1 -> Page2 + Page2 -> Page0 + Page0 -> Page3
+}
+
+/*
+-- instance test for a graph with a sink and a cycle. With naive algorithm, the sink gradually absorbs the ranks from the cycle.
+test expect {
+    <|simpleTrace|> {
+        pageRank[simpleTrace.term][Page] = sing[5]
+    } for {
+        Int[10]
+        sink
+        #State = 4
+    } is sat
+    <|simpleTrace|> {
+        pageRank[simpleTrace.term][Page] not in sing[5]
+    } for {
+        Int[10]
+        sink
+        #State = 4
+    } is unsat
+}
+*/
+
+inst sink2 {
+    Page = Page0 + Page1 + Page2 + Page3
+    link = Page0 -> Page1 + Page1 -> Page2 + Page2 -> Page0 + Page0 -> Page3
+    + Page3 -> Page0 + Page3 -> Page1 + Page3 -> Page2 + Page3 -> Page3
+}
+
+/*
+-- instance test for a graph with a sink and a cycle. With full algorithm, the problem got solved, ranks are distributed uniformly
+test expect {
+    <|traces|> {
+        pageRank[traces.term][Page] = sing[6] + sing[7] + sing[8]
+    } for {
+        Int[10]
+        sink2
+        #State = 10
+        #Event = 9
+    } is sat
+    <|traces|> {
+        pageRank[traces.term][Page] not in sing[6] + sing[7] + sing[8]
+    } for {
+        Int[10]
+        sink2
+        #State = 10
+        #Event = 9
+    } is unsat
+}
+*/
+
+/*
+run <|traces|> for {
+        Int[10]
+        sink2
+        #State = 10
+        #Event = 9
+    }
+*/
